@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>汽车配件适配查询系统</title>
+
+    <!-- WhatsApp / Facebook 链接分享预览卡片设置 (Open Graph) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="正品汽车配件快速报价与适配查询">
+    <meta property="og:description" content="在线选择车型与配件，即时匹配大牌零件与参考价格，支持一键 WhatsApp 专属客服询价。">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #fff;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        select:focus {
+            border-color: #2563eb;
+        }
+
+        select:disabled {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
+            color: #94a3b8;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 10px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .price-highlight {
+            font-size: 20px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .whatsapp-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 18px;
+            transition: background 0.2s;
+        }
+
+        .whatsapp-btn:hover {
+            background-color: #1ebe5d;
+        }
+
+        .whatsapp-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>汽车配件智能适配查询</h1>
+        <p>选择您的爱车与需求，获取正品配件实时报价</p>
+    </div>
+
+    <!-- 车型选择 -->
+    <div class="form-group">
+        <label for="carSelect">1. 选择车型</label>
+        <select id="carSelect" onchange="onCarChange()">
+            <option value="">-- 请选择车型 --</option>
+        </select>
+    </div>
+
+    <!-- 配件部位 -->
+    <div class="form-group">
+        <label for="partSelect">2. 选择配件名称</label>
+        <select id="partSelect" onchange="onPartChange()" disabled>
+            <option value="">-- 先选择车型 --</option>
+        </select>
+    </div>
+
+    <!-- 配件品牌 -->
+    <div class="form-group">
+        <label for="brandSelect">3. 选择配件品牌</label>
+        <select id="brandSelect" onchange="onBrandChange()" disabled>
+            <option value="">-- 先选择配件 --</option>
+        </select>
+    </div>
+
+    <!-- 匹配结果展示区 -->
+    <div class="result-box" id="resultCard">
+        <div class="result-row">
+            <span style="color:#64748b;">适配车型：</span>
+            <span id="resCar" style="font-weight: 600;">-</span>
+        </div>
+        <div class="result-row">
+            <span style="color:#64748b;">配件项目：</span>
+            <span id="resPart" style="font-weight: 600;">-</span>
+        </div>
+        <div class="result-row">
+            <span style="color:#64748b;">零件品牌：</span>
+            <span id="resBrand" style="font-weight: 600;">-</span>
+        </div>
+        <div class="result-row" style="align-items: baseline; margin-top: 10px;">
+            <span style="color:#64748b;">参考价格：</span>
+            <span class="price-highlight" id="resPrice">¥0</span>
+        </div>
+
+        <!-- WhatsApp 唤醒咨询按钮 -->
+        <a id="waButton" class="whatsapp-btn" href="#" target="_blank">
+            <svg class="whatsapp-icon" viewBox="0 0 24 24">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.983.541 1.761.82 2.796.82h.005c3.182 0 5.768-2.587 5.769-5.766.001-3.181-2.585-5.767-5.765-5.767zm7.658 5.766c-.001 4.22-3.435 7.652-7.658 7.652-1.309 0-2.583-.341-3.708-.988l-4.108 1.077 1.097-4.009c-.718-1.196-1.097-2.569-1.097-3.732 0-4.22 3.435-7.653 7.658-7.653 4.224 0 7.658 3.433 7.658 7.653z"/>
+            </svg>
+            联系 WhatsApp 查库存/下单
+        </a>
+    </div>
+</div>
+
+<script>
+    // 你的 WhatsApp 接收号码（带国家区号，例如 86 代表中国大陆，无需加 + 或空格）
+    const WHATSAPP_PHONE = "8613800000000";
+
+    // 汽车配件联动数据库结构（真实场景可从后端 API 获取）
+    const autoPartsData = {
+        "丰田 凯美瑞 (2018-2024)": {
+            "前刹车片 (一对)": [
+                { brand: "布雷博 (Brembo)", price: "¥380" },
+                { brand: "博世 (BOSCH)", price: "¥260" },
+                { brand: "原厂配套 (TOYOTA OEM)", price: "¥450" }
+            ],
+            "机油滤清器": [
+                { brand: "曼牌 (Mann-Filter)", price: "¥55" },
+                { brand: "马勒 (MAHLE)", price: "¥48" },
+                { brand: "博世 (BOSCH)", price: "¥40" }
+            ]
+        },
+        "本田 雅阁 (第十代)": {
+            "前大灯总成": [
+                { brand: "法雷奥 (Valeo)", price: "¥1,850" },
+                { brand: "原厂总成 (Honda OEM)", price: "¥2,600" }
+            ],
+            "空调滤清器": [
+                { brand: "曼牌 (Mann-Filter)", price: "¥75" },
+                { brand: "博世 (BOSCH) 活性炭版", price: "¥68" }
+            ]
+        },
+        "宝马 3系 (G20/G28)": {
+            "前刹车盘 (单只)": [
+                { brand: "布雷博 (Brembo) 打孔盘", price: "¥780" },
+                { brand: "采埃孚 (ZF/TRW)", price: "¥620" },
+                { brand: "BMW 原厂", price: "¥1,150" }
+            ],
+            "火花塞 (4支装)": [
+                { brand: "NGK 钌合金", price: "¥320" },
+                { brand: "博世 (BOSCH) 铱铂金", price: "¥260" }
+            ]
+        }
+    };
+
+    const carSelect = document.getElementById("carSelect");
+    const partSelect = document.getElementById("partSelect");
+    const brandSelect = document.getElementById("brandSelect");
+    const resultCard = document.getElementById("resultCard");
+
+    // 1. 初始化车型列表
+    window.onload = function() {
+        for (let car in autoPartsData) {
+            let opt = document.createElement("option");
+            opt.value = car;
+            opt.innerText = car;
+            carSelect.appendChild(opt);
+        }
+    };
+
+    // 2. 车型变动时触发
+    function onCarChange() {
+        partSelect.innerHTML = '<option value="">-- 请选择配件 --</option>';
+        brandSelect.innerHTML = '<option value="">-- 先选择配件 --</option>';
+        brandSelect.disabled = true;
+        resultCard.style.display = "none";
+
+        const selectedCar = carSelect.value;
+        if (!selectedCar) {
+            partSelect.disabled = true;
+            return;
+        }
+
+        const parts = autoPartsData[selectedCar];
+        for (let part in parts) {
+            let opt = document.createElement("option");
+            opt.value = part;
+            opt.innerText = part;
+            partSelect.appendChild(opt);
+        }
+        partSelect.disabled = false;
+    }
+
+    // 3. 配件变动时触发
+    function onPartChange() {
+        brandSelect.innerHTML = '<option value="">-- 请选择品牌 --</option>';
+        resultCard.style.display = "none";
+
+        const selectedCar = carSelect.value;
+        const selectedPart = partSelect.value;
+        if (!selectedPart) {
+            brandSelect.disabled = true;
+            return;
+        }
+
+        const brands = autoPartsData[selectedCar][selectedPart];
+        brands.forEach((item, index) => {
+            let opt = document.createElement("option");
+            opt.value = index; // 存储数组索引
+            opt.innerText = `${item.brand} (参考: ${item.price})`;
+            brandSelect.appendChild(opt);
+        });
+        brandSelect.disabled = false;
+    }
+
+    // 4. 品牌选择后展示价格并生成 WhatsApp 对话链接
+    function onBrandChange() {
+        const car = carSelect.value;
+        const part = partSelect.value;
+        const brandIndex = brandSelect.value;
+
+        if (brandIndex === "") {
+            resultCard.style.display = "none";
+            return;
+        }
+
+        const matchItem = autoPartsData[car][part][brandIndex];
+
+        // 填充展示文本
+        document.getElementById("resCar").innerText = car;
+        document.getElementById("resPart").innerText = part;
+        document.getElementById("resBrand").innerText = matchItem.brand;
+        document.getElementById("resPrice").innerText = matchItem.price;
+
+        // 构造带有预设咨询文字的 WhatsApp URL
+        const inquiryText = `你好！我在配件系统查询了：\n【车型】${car}\n【配件】${part}\n【品牌】${matchItem.brand}\n【参考价】${matchItem.price}\n请问目前有现货吗？如何发货？`;
+        
+        const encodedText = encodeURIComponent(inquiryText);
+        const waUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodedText}`;
+        
+        document.getElementById("waButton").href = waUrl;
+        resultCard.style.display = "block";
+    }
+</script>
+
+</body>
+</html>
